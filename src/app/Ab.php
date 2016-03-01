@@ -49,22 +49,29 @@ class Ab {
 
     }
 
+	  /**
+  	 *  THP - Forked this functionality 
+       *  reason: instance is getting an empty or null value
+       *  no break of so it breaks out
+       */
     public function ensureUser($forceSession = false){
 
-
-
-        if (!Session::get('laravel_ab_user') || $forceSession){
-
+        if (!Session::get('laravel_ab_user') || empty(Session::get('laravel_ab_user')) || $forceSession){
             $laravel_ab_id = $this->request->cookie('laravel_ab_user', uniqid().$this->request->getClientIp() );
             Session::set('laravel_ab_user',$laravel_ab_id);
-
         }
 
         if (empty(self::$session)){
-            self::$session = Instance::firstOrCreate([
-                'instance'=>Session::get("laravel_ab_user"),
-                'identifier'=>$this->request->getClientIp()
-            ]);
+            if (Session::get('laravel_ab_user') || !empty(Session::get('laravel_ab_user'))) {
+                try {
+                    self::$session = Instance::firstOrCreate([
+                        'instance' => Session::get("laravel_ab_user"),
+                        'identifier' => $this->request->getClientIp()
+                    ]);
+                }catch (\Exception $e) {
+                   // eh lets not bother then but we should not give a whoops
+                }
+            }
         }
 
 
